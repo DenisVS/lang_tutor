@@ -2,11 +2,11 @@
 ### the main program
 ## version: 2024-01-20-14-10
 set -u 
-SOURCE_FILE="phrases.csv"
+SOURCE_FILE="f:\ob\my_notes\Serbian\phrases.md"
 # RESULT_FILE="products_fixed.csv"
-touch "temp_phrases.csv"
-rm "temp_phrases.csv"
-touch "temp_phrases.csv"
+#touch "temp_phrases.csv"
+#rm "temp_phrases.csv"
+#touch "temp_phrases.csv"
 SAVEIFS=${IFS} #Устанавливаем разделитель строк
 IFS='
 '
@@ -59,24 +59,33 @@ for CURRENT_LINE in ${SCORED_DATA}; do
     NORMALIZED_USER_ANSWER=$(echo $USER_ANSWER | sed -e 's/\(.*\)/\L\1/' | tr -d '[:punct:]')
     clear
     if [ "$NORMALIZED_USER_ANSWER" = "$NORMALIZED_PROPER_ANSWER" ]; then
-      echo $PROPER_ANSWER
-      echo --------------------
+      echo Q: $QUESTION
+      echo A: $PROPER_ANSWER
+    echo _______________________________________________________________________________
       echo Correct!
       WRONG_ANSWER=0
       #echo $QUESTION"|"$PROPER_ANSWER"|"$COUNT"|"$LOSSES >>temp_phrases.csv
     else
       echo PROPER ANSWER: $PROPER_ANSWER
-      echo YOUR ANSWER: $USER_ANSWER
-      echo --------------------
-      echo Please note the following:
-      comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)
-
+      echo " YOUR ANSWER :" $USER_ANSWER
+    echo _______________________________________________________________________________
+      echo " Please pay attention to the spelling of the following words:"
+      #comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)
+      DIFF_TEXT=`comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)`
+      if [ -n "$DIFF_TEXT" ]    # $string1 не была объявлена или инициализирована.
+      then
+        for WRONG_WORD in ${DIFF_TEXT}; do
+          echo "* $WRONG_WORD"
+        done
+      else
+        echo "*  Incorrect word order in a sentence"
+      fi
       LOSSES=$(expr ${LOSSES} + 1)
       #echo $QUESTION"|"$PROPER_ANSWER"|"$COUNT"|"$LOSSES >>temp_phrases.csv
 
     fi
     #read -u2 -rsn1 -p "Press any key to continue . . ."
-    echo --------------------
+    echo _______________________________________________________________________________
     read -u2 -n1 -s -r -p $'Press any key to continue or ESC to exit...\n' key
     #echo $key
     if [ "$key" = $'\e' ]; then
