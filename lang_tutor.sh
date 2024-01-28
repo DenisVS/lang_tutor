@@ -1,13 +1,13 @@
 #!/bin/sh
 ### the main program
-## version: 2024-01-20-14-10
+## version: 2024-01-28-19-10
 set -u 
 SOURCE_FILE="f:\ob\my_notes\Serbian\phrases.md"
 # RESULT_FILE="products_fixed.csv"
 #touch "temp_phrases.csv"
 #rm "temp_phrases.csv"
 #touch "temp_phrases.csv"
-SAVEIFS=${IFS} #Устанавливаем разделитель строк
+SAVEIFS=${IFS}
 IFS='
 '
 
@@ -68,16 +68,17 @@ for CURRENT_LINE in ${SCORED_DATA}; do
     else
       echo PROPER ANSWER: $PROPER_ANSWER
       echo " YOUR ANSWER :" $USER_ANSWER
-    echo _______________________________________________________________________________
-      echo " Please pay attention to the spelling of the following words:"
+      echo _______________________________________________________________________________
       #comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)
       DIFF_TEXT=`comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)`
       if [ -n "$DIFF_TEXT" ]    # $string1 не была объявлена или инициализирована.
       then
+        echo " Please pay attention to the spelling of the following words:"
         for WRONG_WORD in ${DIFF_TEXT}; do
           echo "* $WRONG_WORD"
         done
       else
+        echo " Please note the following:"
         echo "*  Incorrect word order in a sentence"
       fi
       LOSSES=$(expr ${LOSSES} + 1)
@@ -94,7 +95,7 @@ for CURRENT_LINE in ${SCORED_DATA}; do
     fi
   done
 done
-IFS=${SAVEIFS} #возвращаем разделитель строк
+IFS=${SAVEIFS}
 #DATE=$(date "+%Y%m%d_%H%M")
 #mv $SOURCE_FILE $DATE.csv
 #mv temp_phrases.csv $SOURCE_FILE
