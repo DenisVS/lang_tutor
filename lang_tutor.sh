@@ -61,14 +61,14 @@ for CURRENT_LINE in ${SCORED_DATA}; do
     if [ "$NORMALIZED_USER_ANSWER" = "$NORMALIZED_PROPER_ANSWER" ]; then
       echo Q: $QUESTION
       echo A: $PROPER_ANSWER
-    echo _______________________________________________________________________________
+    echo _____________________________________________________________________________
       echo Correct!
       WRONG_ANSWER=0
       #echo $QUESTION"|"$PROPER_ANSWER"|"$COUNT"|"$LOSSES >>temp_phrases.csv
     else
       echo PROPER ANSWER: $PROPER_ANSWER
       echo " YOUR ANSWER :" $USER_ANSWER
-      echo _______________________________________________________________________________
+      echo _____________________________________________________________________________
       #comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)
       DIFF_TEXT=`comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)`
       if [ -n "$DIFF_TEXT" ]    # $string1 не была объявлена или инициализирована.
@@ -86,7 +86,7 @@ for CURRENT_LINE in ${SCORED_DATA}; do
 
     fi
     #read -u2 -rsn1 -p "Press any key to continue . . ."
-    echo _______________________________________________________________________________
+    echo _____________________________________________________________________________
     read -u2 -n1 -s -r -p $'Press any key to continue or ESC to exit...\n' key
     #echo $key
     if [ "$key" = $'\e' ]; then
