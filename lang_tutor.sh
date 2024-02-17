@@ -1,7 +1,7 @@
 #!/bin/sh
 ### the main program
 ## version: 2024-01-28-19-10
-set -u 
+set -u
 SOURCE_FILE="f:\ob\my_notes\Serbian\phrases.md"
 # RESULT_FILE="products_fixed.csv"
 #touch "temp_phrases.csv"
@@ -39,8 +39,9 @@ for CURRENT_LINE in ${SCORED_DATA}; do
   QUESTION=$(echo "$CURRENT_LINE" | sed 's/.$//' | awk -F \| '{ print $1}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   # exchanged sed 's/.$//' for sed -e 's/'"`printf '\015'`"'$//' . If necessary, do it in the whole document //todo
   #PROPER_ANSWER=$(echo "$CURRENT_LINE" | sed 's/.$//' | awk -F \| '{ print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | sed -r 's/\ +/\ /g')
-  PROPER_ANSWER=$(echo "$CURRENT_LINE" | sed -e 's/'"`printf '\015'`"'$//' | awk -F \| '{ print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | sed -r 's/\ +/\ /g')
+  PROPER_ANSWER=$(echo "$CURRENT_LINE" | sed -e 's/'"$(printf '\015')"'$//' | awk -F \| '{ print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | sed -r 's/\ +/\ /g')
   NORMALIZED_PROPER_ANSWER=$(echo "$PROPER_ANSWER" | sed -e 's/\(.*\)/\L\1/' | tr -d '[:punct:]')
+  COUNT_SYMBOLS_PROPER_ANSWER=$(echo "$NORMALIZED_PROPER_ANSWER" | wc -c)
   COUNT=$(echo "$CURRENT_LINE" | sed 's/.$//' | awk -F \| '{ print $3}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   LOSSES=$(echo "$CURRENT_LINE" | sed 's/.$//' | awk -F \| '{ print $4}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   if [ "$LOSSES" = "" ]; then
@@ -57,22 +58,27 @@ for CURRENT_LINE in ${SCORED_DATA}; do
     read -u 2 -p "Your answer: " USER_ANSWER # Take user input from stderr instead https://unix.stackexchange.com/questions/460266/use-read-as-a-prompt-inside-a-while-loop-driven-by-read
     USER_ANSWER=$(echo $USER_ANSWER | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | sed -r 's/\ +/\ /g')
     NORMALIZED_USER_ANSWER=$(echo $USER_ANSWER | sed -e 's/\(.*\)/\L\1/' | tr -d '[:punct:]')
+    COUNT_SYMBOLS_USER_ANSWER=$(echo "$NORMALIZED_USER_ANSWER" | wc -c)
+    KOEFF="2"
+    FIXED_COUNT_SYMBOLS_USER_ANSWER=$(expr ${COUNT_SYMBOLS_USER_ANSWER} \* ${KOEFF} - 4)
+    DIFF_COUNT=$(expr ${COUNT_SYMBOLS_PROPER_ANSWER} - ${FIXED_COUNT_SYMBOLS_USER_ANSWER})
     clear
     if [ "$NORMALIZED_USER_ANSWER" = "$NORMALIZED_PROPER_ANSWER" ]; then
       echo Q: $QUESTION
       echo A: $PROPER_ANSWER
-    echo _____________________________________________________________________________
+      echo _____________________________________________________________________________
       echo Correct!
       WRONG_ANSWER=0
-      #echo $QUESTION"|"$PROPER_ANSWER"|"$COUNT"|"$LOSSES >>temp_phrases.csv
+    elif [ $DIFF_COUNT -gt 0 ]; then
+      echo Do not be so lazy! Write something.
     else
+
       echo PROPER ANSWER: $PROPER_ANSWER
       echo " YOUR ANSWER :" $USER_ANSWER
       echo _____________________________________________________________________________
       #comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)
       DIFF_TEXT=`comm -23 <(echo $NORMALIZED_PROPER_ANSWER | tr ' ' '\n' | sort) <(echo $NORMALIZED_USER_ANSWER | tr ' ' '\n' | sort)`
-      if [ -n "$DIFF_TEXT" ]    # $string1 не была объявлена или инициализирована.
-      then
+      if [ -n "$DIFF_TEXT" ]; then # $string1 не была объявлена или инициализирована.
         echo " Please pay attention to the spelling of the following words:"
         for WRONG_WORD in ${DIFF_TEXT}; do
           echo "* $WRONG_WORD"
