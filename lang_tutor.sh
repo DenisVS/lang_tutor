@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ### the main program
 ## version: 2024-01-28-19-10
 set -u
